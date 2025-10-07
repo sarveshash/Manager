@@ -1,35 +1,29 @@
 import asyncio
 from datetime import datetime, timedelta
 from telethon import TelegramClient, events
-from telethon.tl.types import ChatParticipantAdmin, ChatParticipantCreator
+from telethon.tl.types import ChannelParticipantsAdmins
 from telethon.errors import ChatAdminRequiredError, UserAdminInvalidError
 import json
 import os
 
-# ========== BOT CONFIG ==========
 API_ID = 27715449
 API_HASH = "dd3da7c5045f7679ff1f0ed0c82404e0"
 BOT_TOKEN = "8397651199:AAGPUiPNlr4AkgGoQK6BWAeyK4uCYL0knJ4"
 
-# ========== FILE TO STORE ACTIVITY ==========
 ACTIVITY_FILE = "activity.json"
 
-# Load saved activity data
 if os.path.exists(ACTIVITY_FILE):
     with open(ACTIVITY_FILE, "r") as f:
         user_activity = json.load(f)
 else:
     user_activity = {}
 
-# ========== INIT TELETHON CLIENT ==========
 client = TelegramClient("bot", API_ID, API_HASH).start(bot_token=BOT_TOKEN)
 
-# ========== SAVE ACTIVITY ==========
 def save_activity():
     with open(ACTIVITY_FILE, "w") as f:
         json.dump(user_activity, f, default=str)
 
-# ========== TRACK USER MESSAGES ==========
 @client.on(events.NewMessage)
 async def track_activity(event):
     if event.is_group and event.sender_id:
@@ -43,22 +37,23 @@ async def track_activity(event):
         user_activity[chat_id][user_id] = now
         save_activity()
 
-# ========== /kickall COMMAND ==========
 @client.on(events.NewMessage(pattern='/kickall'))
 async def kick_all(event):
     chat = await event.get_chat()
     sender = await event.get_sender()
 
-    # Check if sender is admin
-    admins = [p.participant.user_id async for p in client.iter_participants(chat, filter=ChatParticipantAdmin)]
-    if sender.id not in admins:
+    admin_ids = []
+    async for admin in client.iter_participants(chat, filter=ChannelParticipantsAdmins()):
+        admin_ids.append(admin.id)
+    
+    if sender.id not in admin_ids:
         await event.reply("❌ Only admins can use this command.")
         return
 
     kicked = 0
     async for user in client.iter_participants(chat):
-        if isinstance(user.participant, (ChatParticipantAdmin, ChatParticipantCreator)):
-            continue  # Skip admins
+        if user.id in admin_ids:
+            continue
         try:
             await client.kick_participant(chat, user.id)
             kicked += 1
@@ -68,10 +63,12 @@ async def kick_all(event):
         except ChatAdminRequiredError:
             await event.reply("⚠️ I need 'Ban Members' permission to kick users.")
             return
+        except Exception as e:
+            print(f"Error kicking {user.id}: {e}")
+            continue
 
     await event.reply(f"✅ Kicked {kicked} non-admin members.")
 
-# ========== INACTIVITY CHECKER ==========
 async def remove_inactive_users():
     while True:
         now = datetime.utcnow()
@@ -97,10 +94,10 @@ async def remove_inactive_users():
                     except Exception as e:
                         print(f"Error removing {user_id}: {e}")
 
-        await asyncio.sleep(86400)  # Check every 24 hours
+        await asyncio.sleep(86400)
 
-# ========== RUN BOT ==========
 if __name__ == "__main__":
     print("✅ Bot started and running...")
     client.loop.create_task(remove_inactive_users())
     client.run_until_disconnected()
+    
