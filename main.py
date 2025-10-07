@@ -7,9 +7,9 @@ import json
 import os
 
 # ========== BOT CONFIG ==========
-API_ID = 12345678  # 🔹 Replace with your own API ID
-API_HASH = "your_api_hash_here"  # 🔹 Replace with your API hash
-BOT_TOKEN = "1234567890:AAExampleBotTokenHere"  # 🔹 Replace with your Bot Token
+API_ID= 27715449
+API_HASH= "dd3da7c5045f7679ff1f0ed0c82404e0"
+BOT_TOKEN="8397651199:AAGPUiPNlr4AkgGoQK6BWAeyK4uCYL0knJ4"
 
 # ========== FILE TO STORE ACTIVITY ==========
 ACTIVITY_FILE = "activity.json"
