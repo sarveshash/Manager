@@ -94,7 +94,7 @@ async def remove_inactive_users():
                     except Exception as e:
                         print(f"Error removing {user_id}: {e}")
 
-        await asyncio.sleep(86400)
+        await asyncio.sleep(10)
 
 if __name__ == "__main__":
     print("✅ Bot started and running...")
