@@ -7,9 +7,9 @@ import json
 import os
 
 # ========== BOT CONFIG ==========
-API_ID= 27715449
-API_HASH= "dd3da7c5045f7679ff1f0ed0c82404e0"
-BOT_TOKEN="8397651199:AAGPUiPNlr4AkgGoQK6BWAeyK4uCYL0knJ4"
+API_ID = 27715449
+API_HASH = "dd3da7c5045f7679ff1f0ed0c82404e0"
+BOT_TOKEN = "8397651199:AAGPUiPNlr4AkgGoQK6BWAeyK4uCYL0knJ4"
 
 # ========== FILE TO STORE ACTIVITY ==========
 ACTIVITY_FILE = "activity.json"
@@ -97,12 +97,10 @@ async def remove_inactive_users():
                     except Exception as e:
                         print(f"Error removing {user_id}: {e}")
 
-        await asyncio.sleep(10)  # Run every 24 hours
+        await asyncio.sleep(86400)  # Check every 24 hours
 
 # ========== RUN BOT ==========
-async def main():
+if __name__ == "__main__":
     print("✅ Bot started and running...")
-    asyncio.create_task(remove_inactive_users())
-    await client.run_until_disconnected()
-
-asyncio.run(main())
+    client.loop.create_task(remove_inactive_users())
+    client.run_until_disconnected()
